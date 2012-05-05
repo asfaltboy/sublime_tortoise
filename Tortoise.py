@@ -5,6 +5,8 @@ import subprocess
 import re
 import time
 
+from utils import search_file
+
 
 class RepositoryNotFoundError(Exception):
     pass
@@ -554,8 +556,20 @@ class SVN():
 class Git():
     def __init__(self, tortoise_proc_path, root_dir):
         settings = sublime.load_settings('Tortoise.sublime-settings')
-        self.git_path = settings.get('git_tgit_path') or (os.path.dirname(tortoise_proc_path) + '\\tgit.exe')
+        self.git_path = settings.get('git_tgit_path') or (os.path.dirname(tortoise_proc_path) + '\\tgit.exe') or (os.path.dirname(tortoise_proc_path) + '\\git.exe')
+        if not self.git_path:
+            # define multiple locations to search for 'git.exe'
+            dirs = (
+                os.environ.get("ProgramFiles(x86)", os.environ.get("ProgramFiles", '')),
+                'c:\\git',
+                'c:\\tgit'
+            )
+            print "searching for path of git.exe/tgit.exe"
+            self.git_path = search_file('git.exe', dirs)
+            if not self.git_path:
+                self.git_path = search_file('tgit.exe', dirs)
         self.root_dir = root_dir
+        print "found git at {0}".format(self.git_path)
 
     def check_status(self, path):
         if os.path.isdir(path):
