@@ -5,6 +5,8 @@ import subprocess
 import re
 import time
 
+__name__ = "Tortoise"
+
 
 class RepositoryNotFoundError(Exception):
     pass
@@ -60,7 +62,7 @@ def handles_not_found(fn):
     def handler(self, *args, **kwargs):
         try:
             fn(self, *args, **kwargs)
-        except (NotFoundError) as (exception):
+        except (NotFoundError) as exception:
             sublime.error_message('Tortoise: ' + str(exception))
     return handler
 
@@ -354,12 +356,11 @@ class Tortoise():
 
     def process_status(self, vcs, path):
         global file_status_cache
-        status = ''
         settings = sublime.load_settings('Tortoise.sublime-settings')
         if path in file_status_cache and file_status_cache[path]['time'] > \
                 time.time() - settings.get('cache_length'):
             if settings.get('debug'):
-                print 'Fetching cached status for %s' % path
+                print('Fetching cached status for %s', path)
             return file_status_cache[path]['status']
 
         if settings.get('debug'):
@@ -367,8 +368,9 @@ class Tortoise():
 
         try:
             status = vcs.check_status(path)
-        except (Exception) as (exception):
+        except (Exception) as exception:
             sublime.error_message(str(exception))
+            status = None
 
         file_status_cache[path] = {
             'time': time.time() + settings.get('cache_length'),
@@ -376,7 +378,7 @@ class Tortoise():
         }
 
         if settings.get('debug'):
-            print 'Fetching status for %s in %s seconds' % (path,
+            print('Fetching status for %s in %s seconds', path,
                 str(time.time() - start_time))
 
         return status
@@ -431,7 +433,6 @@ class TortoiseProc(Tortoise):
         path = os.path.relpath(path, self.root_dir)
         ForkGui('"' + self.path + '" /command:update /path:"%s"' % path,
             self.root_dir)
-
 
 class TortoiseSVN(TortoiseProc):
     def __init__(self, binary_path, file):
@@ -562,7 +563,8 @@ class NonInteractiveProcess():
             stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
             startupinfo=startupinfo, cwd=self.cwd)
 
-        return proc.stdout.read().replace('\r\n', '\n').rstrip(' \n\r')
+        output = str(proc.stdout.read())
+        return output.replace('\r\n', '\n').rstrip(' \n\r')
 
 
 class SVN():
@@ -570,8 +572,9 @@ class SVN():
         self.root_dir = root_dir
 
     def check_status(self, path):
-        svn_path = os.path.join(sublime.packages_path(), __name__, 'svn',
-            'svn.exe')
+        settings = sublime.load_settings('Tortoise.sublime-settings')
+        svn_path = settings.get('svn_path', os.path.join(sublime.packages_path(), __name__, 'svn',
+            'svn.exe'))
         proc = NonInteractiveProcess([svn_path, 'status', path],
             cwd=self.root_dir)
         result = proc.run().split('\n')
