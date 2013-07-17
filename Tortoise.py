@@ -554,7 +554,7 @@ class SVN():
 class Git():
     def __init__(self, tortoise_proc_path, root_dir):
         settings = sublime.load_settings('Tortoise.sublime-settings')
-        self.git_path = settings.get('git_tgit_path') or (os.path.dirname(tortoise_proc_path) + '\\tgit.exe')
+        self.git_path = settings.get('git_tgit_path', os.path.dirname(tortoise_proc_path) + '\\tgit.exe')
         self.root_dir = root_dir
 
     def check_status(self, path):
