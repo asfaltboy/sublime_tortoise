@@ -272,6 +272,27 @@ class TortoiseRevertCommand(sublime_plugin.WindowCommand, TortoiseCommand):
         return self.get_vcs(path).get_status(path) in \
             ['A', 'M', 'R', 'C', 'U']
 
+class TortoiseUpdateCommand(sublime_plugin.WindowCommand, TortoiseCommand):
+    @handles_not_found
+    def run(self, paths=None):
+        path = self.get_path(paths)
+        self.get_vcs(path).update(path if paths else None)
+
+    @invisible_when_not_found
+    def is_visible(self, paths=None):
+        if not self.menus_enabled():
+            return False
+        path = self.get_path(paths)
+        vcs = self.get_vcs(path)
+        return path and vcs.get_status(path) in \
+            ['A', '', 'M', 'R', 'C', 'U']
+
+    @invisible_when_not_found
+    def is_enabled(self, paths=None):
+        path = self.get_path(paths)
+        return path and self.get_vcs(path).get_status(path) in \
+            ['A', '', 'M', 'R', 'C', 'U']
+
 
 class ForkGui():
     def __init__(self, cmd, cwd):
@@ -333,6 +354,7 @@ class Tortoise():
 
     def process_status(self, vcs, path):
         global file_status_cache
+        status = ''
         settings = sublime.load_settings('Tortoise.sublime-settings')
         if path in file_status_cache and file_status_cache[path]['time'] > \
                 time.time() - settings.get('cache_length'):
@@ -403,6 +425,11 @@ class TortoiseProc(Tortoise):
     def revert(self, path):
         path = os.path.relpath(path, self.root_dir)
         ForkGui('"' + self.path + '" /command:revert /path:"%s"' % path,
+            self.root_dir)
+
+    def update(self, path):
+        path = os.path.relpath(path, self.root_dir)
+        ForkGui('"' + self.path + '" /command:update /path:"%s"' % path,
             self.root_dir)
 
 
@@ -478,6 +505,11 @@ class TortoiseHg(Tortoise):
     def log(self, path=None):
         path = os.path.relpath(path, self.root_dir)
         args = [self.path, 'log', '--nofork', path]
+
+        settings = sublime.load_settings('Tortoise.sublime-settings')
+        if settings.get('use_workbench'):
+            args = [self.path, 'log', '--nofork']
+
         ForkGui(args, self.root_dir)
 
     def blame(self, path=None):
@@ -503,6 +535,11 @@ class TortoiseHg(Tortoise):
     def revert(self, path):
         path = os.path.relpath(path, self.root_dir)
         args = [self.path, 'revert', '--nofork', path]
+        ForkGui(args, self.root_dir)
+
+    def update(self, path):
+        path = os.path.relpath(path, self.root_dir)
+        args = [self.path, 'update', '--nofork', path]
         ForkGui(args, self.root_dir)
 
     def get_status(self, path):

@@ -4,7 +4,7 @@
 
 	// The path to the TortoiseGit TortoiseProc.exe executable
 	//"git_tortoiseproc_path": "C:\\Program Files\\TortoiseGit\\bin\\TortoiseProc.exe",
-	
+
 	// The path to the TortoiseHg thgw.exe (or hgtk.exe) executable
 	//"hg_hgtk_path": "C:\\Program Files\\TortoiseHg\\thgw.exe"
 
@@ -19,5 +19,8 @@
 	"enable_menus": true,
 
 	// If debug messages should be printed to the console
-	"debug": false
+	"debug": false,
+
+    // Use workbench instead of log (TortoiseHg >= 2.0)
+    "use_workbench": true
 }
