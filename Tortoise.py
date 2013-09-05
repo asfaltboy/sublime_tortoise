@@ -8,6 +8,8 @@ import time
 
 from sublime_tortoise.utils import search_file
 
+PACKAGE_ROOT = ".".join(__name__.split(".")[:-1])  # last dot leads to the current module
+
 
 class RepositoryNotFoundError(Exception):
     pass
@@ -566,8 +568,7 @@ For more details, see: http://subversion.apache.org/faq.html#working-copy-format
         if "svn_path" in settings:
             paths.append(settings["svn_path"])
         packages_path = sublime.packages_path()
-        package_path = ".".join(__name__.split(".")[:-1])
-        paths.append(os.path.join(packages_path, package_path,
+        paths.append(os.path.join(packages_path, PACKAGE_ROOT,
                      'svn', 'svn.exe'))
         return paths
 
