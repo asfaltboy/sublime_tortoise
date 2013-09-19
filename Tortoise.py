@@ -6,7 +6,11 @@ import threading
 import re
 import time
 
-from sublime_tortoise.utils import search_file
+try:
+    from sublime_tortoise.utils import search_file
+except ImportError:
+    from utils import search_file
+
 
 PACKAGE_ROOT = ".".join(__name__.split(".")[:-1])  # last dot leads to the current module
 
@@ -314,8 +318,6 @@ class Tortoise():
 
         possible_dirs = (
             os.environ.get("ProgramFiles(x86)", os.environ.get("ProgramFiles", '')),
-            'c:\\git',
-            'c:\\tgit'
         )
 
         # suggest user a search before starting it (available after ver 2187)
