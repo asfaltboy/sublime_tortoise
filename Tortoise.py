@@ -5,10 +5,12 @@ import subprocess
 import threading
 import re
 import time
-
-from sublime_tortoise.utils import search_file
+import importlib
 
 PACKAGE_ROOT = ".".join(__name__.split(".")[:-1])  # last dot leads to the current module
+
+# from utils import search_file
+search_file = importlib.__import__(PACKAGE_ROOT + ".utils", globals(), locals(), ["search_file"]).search_file
 
 
 class RepositoryNotFoundError(Exception):
