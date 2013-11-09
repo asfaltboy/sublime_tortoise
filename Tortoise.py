@@ -1,16 +1,20 @@
-import sublime
-import sublime_plugin
+import importlib
 import os.path
+import re
 import subprocess
 import threading
-import re
 import time
-import importlib
+
+import sublime
+import sublime_plugin
+
 
 PACKAGE_ROOT = ".".join(__name__.split(".")[:-1])  # last dot leads to the current module
 
-# from utils import search_file
-search_file = importlib.__import__(PACKAGE_ROOT + ".utils", globals(), locals(), ["search_file"]).search_file
+try:
+    search_file = importlib.__import__(PACKAGE_ROOT + ".utils", globals(), locals(), ["search_file"]).search_file
+except ImportError:
+    from utils import search_file
 
 
 class RepositoryNotFoundError(Exception):
@@ -316,8 +320,6 @@ class Tortoise():
 
         possible_dirs = (
             os.environ.get("ProgramFiles(x86)", os.environ.get("ProgramFiles", '')),
-            'c:\\git',
-            'c:\\tgit'
         )
 
         # suggest user a search before starting it (available after ver 2187)
